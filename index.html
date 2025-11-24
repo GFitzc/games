@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This is for C</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFB6C1; /* Light pink romantic theme */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            position: relative; /* For overlay positioning */
+        }
+        h1 {
+            color: #DC143C; /* Crimson for romance */
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #FF69B4; /* Hot pink card back */
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .card.flipped {
+            background-color: #FFF; /* White when flipped */
+            color: #000;
+        }
+        .card.matched {
+            background-color: #FF1493; /* Deep pink when matched */
+            cursor: default;
+        }
+        #timer {
+            font-size: 1.5em;
+            color: #DC143C;
+        }
+        #message {
+            font-size: 1.2em;
+            color: #FF4500; /* Orange for win message */
+            margin-top: 20px;
+        }
+        /* New: Win overlay styles */
+        #win-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 182, 193, 0.7); /* Semi-transparent pink background */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 10; /* On top of everything */
+        }
+        #win-message {
+            background-color: #FFF;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            color: #DC143C;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #win-overlay.show {
+            display: flex; /* Show when winning */
+        }
+    </style>
+</head>
+<body>
+    <h1>Hai Sayangkuuuu!!!</h1>
+    <h3>Aku Mau Kasih Sesuatu Nihh</h3>
+    <p>Tapi Sebelum kasih, ayo main game dulu</p>
+    <p>Cocokin 2 kartu yang sama secepat mungkin ya :3</p>
+    <div id="timer">Time: 0s</div>
+    <div class="game-board" id="game-board"></div>
+    <div id="message"></div>
+   
+
+    <!-- New: Win overlay -->
+    <div id="win-overlay">
+        <div id="win-message">
+            <h2>Congratulations Sayanggggg! 💕</h2>
+            <p>Cewe gweh keren banget aseli</p>
+            <p>Ini hadiah untuk kamu, cuma playlist spotify kok :(  Jadi jangan berharap lebih hehe</p>
+            <img src = cia.jpg alt="Cia Image" style="width:170px; height:auto; border-radius:10px; margin:10px 0;">
+            <p>The Most Beautiful Person In My World</p>
+            <p>The reason why i love her : Because it's her aihihihihihihhi :p</p>
+            <p>⠀⣠⠴⠚⡙⠙⠲⣤⣠⠖⢋⡛⠙⠲⣄⠀⠀
+                ⣴⠃⣰⠟⠉⠙⢦⡈⢁⣾⡟⠉⠳⣆⠸⣇⠀
+                ⣿⠀⣿⠀⠀⠀⠀⠛⠛⠁⠀⠀⠀⡿⠄⣿⠄
+                ⠸⡄⠸⣇⠀⠀⠀⠀⠀⠀⠀⠀⣰⠃⣰⡏⠀
+                ⠀⠙⣆⠙⢧⡀⠀⠀⠀⠀⢀⡴⠃⣰⠏⠀⠀
+                ⠀⠀⠈⠳⣄⠙⠶⣄⣀⠴⠋⣠⠞⠁⠀⠀⠀
+                ⠀⠀⠀⠀⠈⠓⢦⡈⢡⣰⠞⠁⠀⠀⠀⠀⠀
+                ⠀⠀⠀⠀⠀⠀⠀⠉⠋⠁⠀⠀⠀⠀⠀⠀⠀</p>
+            <a href="https://open.spotify.com/playlist/0fxGSQN29dTdg5m4ZyEmO0?si=cf82cebe38f84a05&pt=83b7ca904200b85e80d21295ba6cf3f0">Link Hadiah</a>
+        </div>
+    </div>
+
+    <script>
+        const board = document.getElementById('game-board');
+        const timerDisplay = document.getElementById('timer');
+        const messageDisplay = document.getElementById('message');
+        const winOverlay = document.getElementById('win-overlay');
+        const winTime = document.getElementById('win-time');  // This can stay, but we won't use it
+        const cards = ['❤️', '💍', '🌹', '💕', '❤️', '💍', '🌹', '💕', '💖', '🌸', '💖', '🌸', '💑', '💐', '💑', '💐']; 
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let startTime = Date.now();
+        let timerInterval;
+
+        // Shuffle cards
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Create board
+        function createBoard() {
+            shuffle(cards);
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.index = index;
+                cardElement.dataset.value = card;
+                cardElement.addEventListener('click', flipCard);
+                board.appendChild(cardElement);
+            });
+            startTimer();
+        }
+
+        // Flip card
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+                this.classList.add('flipped');
+                this.textContent = this.dataset.value;
+                flippedCards.push(this);
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.value === card2.dataset.value) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === 8) { // All pairs matched
+                    clearInterval(timerInterval);
+                    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+                    // Removed: winTime.textContent = timeTaken; (causing the error)
+                    // Show the win overlay
+                    winOverlay.classList.add('show');
+                    // Optional: Keep a message below if wanted
+                    messageDisplay.textContent = `You Win! Time: ${timeTaken}s`;
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card1.textContent = '';
+                card2.classList.remove('flipped');
+                card2.textContent = '';
+            }
+            flippedCards = [];
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timerDisplay.textContent = `Time: ${elapsed}s`;
+            }, 1000);
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
